@@ -22,7 +22,7 @@ services:
     healthCheckPath: /api/v1/health
     envVars:
       - key: DATABASE_URL
-        sync: false           # paste your Neon/Supabase URL in Render dashboard
+        sync: postgresql://neondb_owner:npg_t5CSqULDvn1G@ep-shiny-sky-astrz8bs.c-4.eu-central-1.aws.neon.tech/neondb?sslmode=require           # paste your Neon/Supabase URL in Render dashboard
       - key: SECRET_KEY
         generateValue: true   # Render generates a strong random value
       - key: CORS_ORIGINS
