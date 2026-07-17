@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: craftik
+      POSTGRES_PASSWORD: craftik
+      POSTGRES_DB: craftik
+    ports:
+      - "5432:5432"
+    volumes:
+      - craftik_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U craftik"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://craftik:craftik@db:5432/craftik
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me}
+      CORS_ORIGINS: http://localhost:3000
+      SEED_ON_STARTUP: "true"
+      MIGRATE_ON_STARTUP: "false"   # dev uses create_all for speed; prod = true
+      ENVIRONMENT: development
+      PORT: "8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    # Override the production CMD for dev: hot reload on file changes.
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    # Only build the `deps` stage — dev server runs from source, no Next build needed.
+    build:
+      context: ./frontend
+      target: deps
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+volumes:
+  craftik_pgdata:
