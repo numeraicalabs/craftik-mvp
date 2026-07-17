@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
+html { scroll-behavior: smooth; }
+body {
+  @apply font-sans text-ink bg-white antialiased;
+}
+
+/* Tag/chip helpers */
+.tag { @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold; }
+.tag-orange { @apply tag bg-orange-soft text-orange-dark; }
+.tag-green { @apply tag bg-emerald-50 text-emerald-700; }
+.tag-blue { @apply tag bg-blue-50 text-night; }
+.tag-yellow { @apply tag bg-amber-50 text-amber-700; }
+.tag-gray { @apply tag bg-concrete text-muted; }
+
+/* Grid utility for backgrounds */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
