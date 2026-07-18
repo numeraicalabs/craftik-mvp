@@ -16,13 +16,18 @@ Piattaforma europea per il lavoro specializzato in edilizia, costruzioni, manute
 - **Candidature** — con match score automatico
 - **Score reputazionale AI (v0, spiegabile)** — calcolato su recensioni, lavori completati, completezza profilo, verifica
 - **Recensioni certificate** — solo tra parti che hanno completato un ingaggio
-- **Seed di dati demo** — 8 lavoratori, 3 aziende, 5 offerte, recensioni
+- **Certificazioni e patentini** — con verifica e impatto sullo score
+- **Portfolio lavori** — documentati, geolocalizzabili, con conferma dell'azienda
+- **Messaggistica** — chat worker/azienda (REST + polling, WebSocket-ready)
+- **Badge** — calcolati dalle statistiche verificate, impossibili da falsificare
+- **Recensioni bidirezionali** — con UI completa per entrambi i ruoli
+- **Seed di dati demo** — 35 professionisti + 15 aziende (50 profili completi), 22 offerte, 63 candidature, portfolio, certificazioni, conversazioni
 - **Landing page interattiva** — clone della demo dal mockup
 - **Documentazione API automatica** — Swagger su `/docs`
 
 ## Cosa NON contiene (roadmap post-MVP)
 
-Pagamenti/escrow Stripe, firma digitale eIDAS, contratti PDF, chat realtime, feed social, matching AI avanzato con embedding, KYC provider integrato, notifiche push, app native. La struttura del codice è già predisposta per aggiungerli come nuovi moduli.
+Pagamenti/escrow Stripe, firma digitale eIDAS, contratti PDF, feed social, matching AI con embedding, KYC provider reale, notifiche push, app native, upload foto (serve S3). La struttura del codice è già predisposta per aggiungerli come nuovi moduli.
 
 ## Deploy in produzione (gratis)
 
