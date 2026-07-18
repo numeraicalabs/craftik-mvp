@@ -74,6 +74,19 @@ def get_worker(
     return profile
 
 
+@router.get("/{worker_id}/badges")
+def get_worker_badges(
+    worker_id: int,
+    _: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    profile = db.get(WorkerProfile, worker_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Worker not found")
+    from app.services.badges import compute_badges
+    return compute_badges(db, profile)
+
+
 @router.get("", response_model=list[WorkerSearchResult])
 def search_workers(
     _: Annotated[User, Depends(get_current_user)],
@@ -107,7 +120,7 @@ def search_workers(
         match = min(100, w.ai_score - int(distance) + w.years_experience)
         results.append(
             WorkerSearchResult(
-                id=w.id, first_name=w.first_name, last_name=w.last_name, bio=w.bio,
+                id=w.id, user_id=w.user_id, first_name=w.first_name, last_name=w.last_name, bio=w.bio,
                 profession=w.profession, years_experience=w.years_experience, city=w.city,
                 latitude=w.latitude, longitude=w.longitude, travel_radius_km=w.travel_radius_km,
                 willing_to_relocate=w.willing_to_relocate, hourly_rate_min=w.hourly_rate_min,

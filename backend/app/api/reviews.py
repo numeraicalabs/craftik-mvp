@@ -83,7 +83,7 @@ def create_review(
     return review
 
 
-@router.get("/workers/{worker_id}", response_model=list[ReviewPublic])
+@router.get("/workers/{worker_id}", response_model=list)
 def list_reviews_for_worker(
     worker_id: int,
     _: Annotated[User, Depends(get_current_user)],
@@ -92,9 +92,24 @@ def list_reviews_for_worker(
     worker = db.get(WorkerProfile, worker_id)
     if not worker:
         raise HTTPException(status_code=404, detail="Worker not found")
-    return (
+    reviews = (
         db.query(Review)
         .filter(Review.target_user_id == worker.user_id, Review.author_role == "company")
         .order_by(Review.created_at.desc())
         .all()
     )
+    out = []
+    for r in reviews:
+        author_company = db.query(Company).filter(Company.user_id == r.author_user_id).first()
+        out.append({
+            "id": r.id,
+            "author_role": r.author_role,
+            "author_name": author_company.legal_name if author_company else "Azienda",
+            "rating": r.rating,
+            "punctuality": r.punctuality,
+            "quality": r.quality,
+            "communication": r.communication,
+            "comment": r.comment,
+            "created_at": r.created_at,
+        })
+    return out

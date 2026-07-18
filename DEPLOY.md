@@ -201,3 +201,22 @@ I costi scalano linearmente con l'uso — nessuna sorpresa da migliaia di euro c
 - **Sicurezza**: `SECRET_KEY` generata da Render, HTTPS out of the box.
 
 Total setup: 15 minuti. Costo: 0 €. Perfetto per il pilota, per le prime interviste con utenti, per un'e-mail agli angel con "eccolo, provalo".
+
+---
+
+## Aggiornare la produzione alla v0.2 (portfolio, chat, certificazioni, 50 profili)
+
+La v0.2 aggiunge 3 tabelle (migrazione `0002`) e un seed con 35 professionisti + 15 aziende.
+
+1. **Push del nuovo codice** su GitHub → Render builda e applica `alembic upgrade head` in automatico (le nuove tabelle vengono create senza toccare i dati esistenti).
+2. **Per caricare i 50 profili demo** il database deve essere vuoto (il seed non sovrascrive dati esistenti). Se vuoi ripartire dal seed nuovo: nella console SQL di Neon esegui
+
+   ```sql
+   DROP SCHEMA public CASCADE;
+   CREATE SCHEMA public;
+   ```
+
+   poi su Render fai **Manual Deploy → Clear build cache & deploy**. All'avvio: migrazioni → seed dei 50 profili.
+3. Se invece hai già dati veri da preservare: salta il punto 2 — le nuove funzionalità sono disponibili da subito, semplicemente senza dati demo aggiuntivi.
+
+Login demo invariati: `marco@craftik.dev` / `demo1234`, `hr@edilcostruzioni.dev` / `demo1234` (tutti gli account seed usano `demo1234`).

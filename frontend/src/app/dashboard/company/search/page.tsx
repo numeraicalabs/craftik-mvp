@@ -150,4 +150,5 @@ const companyNav = [
   { href: '/dashboard/company', label: 'Le mie offerte' },
   { href: '/dashboard/company/search', label: 'Cerca professionisti' },
   { href: '/dashboard/company/jobs/new', label: 'Nuova offerta' },
+  { href: '/dashboard/messages', label: 'Messaggi' },
 ];

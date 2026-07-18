@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { api } from '@/lib/api';
-import type { Application, JobPost, ScoreBreakdown, WorkerProfile } from '@/lib/types';
+import type { Application, Badge, JobPost, ScoreBreakdown, WorkerProfile } from '@/lib/types';
 import { APP_STATUS_LABEL, JOB_TYPE_LABEL, PROFESSION_LABELS } from '@/lib/types';
 import { useRequireAuth } from '@/lib/useRequireAuth';
 import { DashboardShell } from '@/components/DashboardShell';
 import { ScoreRing, VerifiedSeal } from '@/components/Brand';
 import { Card } from '@/components/ui';
+import { BadgeRow } from '@/components/Trust';
 
 export default function WorkerDashboard() {
   const { token, ready } = useRequireAuth('worker');
@@ -18,6 +19,7 @@ export default function WorkerDashboard() {
   const [breakdown, setBreakdown] = useState<ScoreBreakdown | null>(null);
   const [jobs, setJobs] = useState<JobPost[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [badges, setBadges] = useState<Badge[]>([]);
 
   useEffect(() => {
     if (!ready || !token) return;
@@ -41,6 +43,7 @@ export default function WorkerDashboard() {
       )
       .then(setJobs)
       .catch(console.error);
+    api.badges.forWorker(profile.id, token).then(setBadges).catch(console.error);
   }, [ready, token, profile]);
 
   if (!ready || !profile) {
@@ -62,6 +65,9 @@ export default function WorkerDashboard() {
           <span className="capitalize">{PROFESSION_LABELS[profile.profession]}</span>
           <span>·</span>
           <span>{profile.city}</span>
+        </div>
+        <div className="mt-3">
+          <BadgeRow badges={badges} />
         </div>
       </div>
 
@@ -223,5 +229,8 @@ function StatusBadge({ status }: { status: Application['status'] }) {
 
 const workerNav = [
   { href: '/dashboard/worker', label: 'Dashboard' },
-  { href: '/dashboard/worker/applications', label: 'Le mie candidature' },
+  { href: '/dashboard/worker/portfolio', label: 'Portfolio' },
+  { href: '/dashboard/worker/applications', label: 'Candidature' },
+  { href: '/dashboard/messages', label: 'Messaggi' },
+  { href: '/dashboard/worker/profile', label: 'Profilo' },
 ];

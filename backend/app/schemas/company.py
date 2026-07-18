@@ -13,6 +13,7 @@ class CompanyPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    user_id: int
     legal_name: str
     vat_number: str
     description: str | None

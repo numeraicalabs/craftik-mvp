@@ -70,7 +70,7 @@ def compute_score(db: Session, worker: WorkerProfile) -> ScoreBreakdown:
     else:
         reviews_score = 40  # neutral prior — a worker without reviews isn't 0
 
-    # Completed engagements
+    # Completed engagements + company-confirmed portfolio works
     completed_count = (
         db.query(Application)
         .filter(
@@ -79,17 +79,36 @@ def compute_score(db: Session, worker: WorkerProfile) -> ScoreBreakdown:
         )
         .count()
     )
-    # 0 completed → 20, saturates around 30 jobs
-    completed_score = min(100, 20 + completed_count * 3)
+    from app.models.portfolio import PortfolioItem  # local import: avoid cycles
+    confirmed_works = (
+        db.query(PortfolioItem)
+        .filter(PortfolioItem.worker_id == worker.id, PortfolioItem.confirmed.is_(True))
+        .count()
+    )
+    # 0 works → 20, saturates around 27 verified works
+    completed_score = min(100, 20 + (completed_count + confirmed_works) * 3)
+
+    # Verified certifications boost the "formazione" side of the profile
+    from app.models.certification import Certification, VerificationStatus
+    verified_certs = (
+        db.query(Certification)
+        .filter(
+            Certification.worker_id == worker.id,
+            Certification.verification_status == VerificationStatus.VERIFIED,
+        )
+        .count()
+    )
+    certs_score = min(100, 30 + verified_certs * 25)  # 0→30, 1→55, 2→80, 3+→100
 
     identity_score = 100 if worker.user and worker.user.is_verified else 20
 
     components = [
-        ScoreComponent("Identità verificata", identity_score, 0.15),
-        ScoreComponent("Completezza profilo", _completeness_score(worker), 0.15),
-        ScoreComponent("Esperienza", _experience_score(worker.years_experience), 0.15),
-        ScoreComponent("Recensioni", reviews_score, 0.30),
-        ScoreComponent("Lavori completati", completed_score, 0.25),
+        ScoreComponent("Identità verificata", identity_score, 0.12),
+        ScoreComponent("Completezza profilo", _completeness_score(worker), 0.12),
+        ScoreComponent("Esperienza", _experience_score(worker.years_experience), 0.12),
+        ScoreComponent("Certificazioni", certs_score, 0.12),
+        ScoreComponent("Recensioni", reviews_score, 0.28),
+        ScoreComponent("Lavori verificati", completed_score, 0.24),
     ]
     total = round(sum(c.value * c.weight for c in components))
     return ScoreBreakdown(total=total, components=components)

@@ -78,6 +78,7 @@ export interface CurrentUser {
 
 export interface WorkerProfile {
   id: number;
+  user_id: number;
   first_name: string;
   last_name: string;
   bio: string | null;
@@ -106,6 +107,7 @@ export interface ScoreBreakdown {
 
 export interface Company {
   id: number;
+  user_id: number;
   legal_name: string;
   vat_number: string;
   description: string | null;
@@ -145,4 +147,69 @@ export interface Application {
   applied_at: string;
   job: JobPost;
   worker: WorkerProfile;
+}
+
+// ---- Fase 2: certificazioni, portfolio, messaggi, badge ----
+export type CertificationKind = 'certificazione' | 'patentino' | 'patente';
+
+export interface Certification {
+  id: number;
+  kind: CertificationKind;
+  name: string;
+  issuer: string | null;
+  issued_year: number | null;
+  expires_year: number | null;
+  verification_status: 'pending' | 'verified' | 'rejected';
+}
+
+export interface PortfolioItem {
+  id: number;
+  worker_id: number;
+  title: string;
+  description: string | null;
+  role: string | null;
+  client_name: string | null;
+  city: string | null;
+  year: number | null;
+  duration_weeks: number | null;
+  materials: string | null;
+  company_id: number | null;
+  confirmed: boolean;
+  confirmed_at: string | null;
+}
+
+export interface Conversation {
+  id: number;
+  other_user_id: number;
+  other_name: string;
+  other_role: string;
+  last_message_preview: string | null;
+  last_message_at: string | null;
+}
+
+export interface ChatMessage {
+  id: number;
+  conversation_id: number;
+  sender_user_id: number;
+  body: string;
+  created_at: string;
+}
+
+export interface Badge {
+  code: string;
+  label: string;
+  icon: string;
+  description: string;
+}
+
+export interface ReviewWithAuthor {
+  id: number;
+  author_role: string;
+  author_name: string;
+  rating: number;
+  punctuality: number | null;
+  quality: number | null;
+  communication: number | null;
+  comment: string | null;
+  created_at: string;
 }

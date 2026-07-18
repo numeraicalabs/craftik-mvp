@@ -124,5 +124,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
 const workerNav = [
   { href: '/dashboard/worker', label: 'Dashboard' },
-  { href: '/dashboard/worker/applications', label: 'Le mie candidature' },
+  { href: '/dashboard/worker/portfolio', label: 'Portfolio' },
+  { href: '/dashboard/worker/applications', label: 'Candidature' },
+  { href: '/dashboard/messages', label: 'Messaggi' },
+  { href: '/dashboard/worker/profile', label: 'Profilo' },
 ];

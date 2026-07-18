@@ -10,6 +10,7 @@ import { useRequireAuth } from '@/lib/useRequireAuth';
 import { DashboardShell } from '@/components/DashboardShell';
 import { ScoreRing, VerifiedSeal } from '@/components/Brand';
 import { Button, Card, ErrorBanner } from '@/components/ui';
+import { ReviewForm } from '@/components/Trust';
 import { avatarGradient, initials } from '@/lib/utils';
 
 export default function CompanyJobDetailPage({ params }: { params: { id: string } }) {
@@ -20,6 +21,8 @@ export default function CompanyJobDetailPage({ params }: { params: { id: string 
   const [job, setJob] = useState<JobPost | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [reviewing, setReviewing] = useState<number | null>(null);
+  const [reviewed, setReviewed] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!ready || !token || !jobId) return;
@@ -134,11 +137,34 @@ export default function CompanyJobDetailPage({ params }: { params: { id: string 
                     </div>
                     <div className="text-xs text-muted">Match {a.match_score}%</div>
                   </div>
-                  <span className={a.status === 'completed' ? 'tag-green' : 'tag-gray'}>
-                    {APP_STATUS_LABEL[a.status]}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    {a.status === 'completed' && !reviewed.has(a.id) && (
+                      <button
+                        onClick={() => setReviewing(reviewing === a.id ? null : a.id)}
+                        className="text-xs font-bold text-orange-dark hover:underline"
+                      >
+                        ★ Recensisci
+                      </button>
+                    )}
+                    {reviewed.has(a.id) && <span className="text-xs font-semibold text-verified">✓ Inviata</span>}
+                    <span className={a.status === 'completed' ? 'tag-green' : 'tag-gray'}>
+                      {APP_STATUS_LABEL[a.status]}
+                    </span>
+                  </div>
                 </div>
               ))}
+            {reviewing !== null && token && (
+              <div className="mt-3">
+                <ReviewForm
+                  applicationId={reviewing}
+                  token={token}
+                  onDone={() => {
+                    setReviewed((s) => new Set(s).add(reviewing));
+                    setReviewing(null);
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -230,4 +256,5 @@ const companyNav = [
   { href: '/dashboard/company', label: 'Le mie offerte' },
   { href: '/dashboard/company/search', label: 'Cerca professionisti' },
   { href: '/dashboard/company/jobs/new', label: 'Nuova offerta' },
+  { href: '/dashboard/messages', label: 'Messaggi' },
 ];

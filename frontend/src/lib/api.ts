@@ -1,6 +1,12 @@
 // Thin API client with typed helpers. In v2, generate from OpenAPI.
 import type {
   Application,
+  Badge,
+  Certification,
+  ChatMessage,
+  Conversation,
+  PortfolioItem,
+  ReviewWithAuthor,
   AuthToken,
   Company,
   CurrentUser,
@@ -139,6 +145,72 @@ export const api = {
         token,
       ),
   },
+
+  // ---- Certifications ----
+  certifications: {
+    listForWorker: (workerId: number, token: string) =>
+      request<Certification[]>(`/certifications/workers/${workerId}`, {}, token),
+    add: (payload: Omit<Certification, 'id' | 'verification_status'>, token: string) =>
+      request<Certification>('/certifications/me', { method: 'POST', body: JSON.stringify(payload) }, token),
+    remove: (id: number, token: string) =>
+      request<void>(`/certifications/me/${id}`, { method: 'DELETE' }, token),
+  },
+
+  // ---- Portfolio ----
+  portfolio: {
+    listForWorker: (workerId: number, token: string) =>
+      request<PortfolioItem[]>(`/portfolio/workers/${workerId}`, {}, token),
+    add: (
+      payload: Omit<PortfolioItem, 'id' | 'worker_id' | 'confirmed' | 'confirmed_at'>,
+      token: string,
+    ) => request<PortfolioItem>('/portfolio/me', { method: 'POST', body: JSON.stringify(payload) }, token),
+    remove: (id: number, token: string) =>
+      request<void>(`/portfolio/me/${id}`, { method: 'DELETE' }, token),
+    pendingConfirmations: (token: string) =>
+      request<PortfolioItem[]>('/portfolio/pending-confirmations', {}, token),
+    confirm: (id: number, token: string) =>
+      request<PortfolioItem>(`/portfolio/${id}/confirm`, { method: 'POST' }, token),
+  },
+
+  // ---- Messages ----
+  messages: {
+    conversations: (token: string) => request<Conversation[]>('/messages/conversations', {}, token),
+    openConversation: (otherUserId: number, token: string) =>
+      request<Conversation>(
+        '/messages/conversations',
+        { method: 'POST', body: JSON.stringify({ other_user_id: otherUserId }) },
+        token,
+      ),
+    list: (convId: number, afterId: number, token: string) =>
+      request<ChatMessage[]>(`/messages/conversations/${convId}/messages?after_id=${afterId}`, {}, token),
+    send: (convId: number, body: string, token: string) =>
+      request<ChatMessage>(
+        `/messages/conversations/${convId}/messages`,
+        { method: 'POST', body: JSON.stringify({ body }) },
+        token,
+      ),
+  },
+
+  // ---- Badges & reviews ----
+  badges: {
+    forWorker: (workerId: number, token: string) =>
+      request<Badge[]>(`/workers/${workerId}/badges`, {}, token),
+  },
+  reviews: {
+    forWorker: (workerId: number, token: string) =>
+      request<ReviewWithAuthor[]>(`/reviews/workers/${workerId}`, {}, token),
+    create: (
+      applicationId: number,
+      payload: { rating: number; punctuality?: number; quality?: number; communication?: number; comment?: string },
+      token: string,
+    ) =>
+      request<unknown>(
+        `/reviews/applications/${applicationId}`,
+        { method: 'POST', body: JSON.stringify(payload) },
+        token,
+      ),
+  },
 };
+
 
 export { ApiError };

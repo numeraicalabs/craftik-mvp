@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { api } from '@/lib/api';
-import type { Company, JobPost } from '@/lib/types';
+import type { Company, JobPost, PortfolioItem } from '@/lib/types';
 import { JOB_TYPE_LABEL, PROFESSION_LABELS } from '@/lib/types';
 import { useRequireAuth } from '@/lib/useRequireAuth';
 import { DashboardShell } from '@/components/DashboardShell';
@@ -14,11 +14,13 @@ export default function CompanyDashboard() {
   const { token, ready } = useRequireAuth('company');
   const [company, setCompany] = useState<Company | null>(null);
   const [jobs, setJobs] = useState<JobPost[]>([]);
+  const [pending, setPending] = useState<PortfolioItem[]>([]);
 
   useEffect(() => {
     if (!ready || !token) return;
     api.companies.getMe(token).then(setCompany).catch(console.error);
     api.jobs.listMine(token).then(setJobs).catch(console.error);
+    api.portfolio.pendingConfirmations(token).then(setPending).catch(console.error);
   }, [ready, token]);
 
   if (!ready || !company) {
@@ -53,6 +55,38 @@ export default function CompanyDashboard() {
         <StatCard label="Offerte totali" value={String(jobs.length)} />
         <StatCard label="Dipendenti" value={String(company.employee_count)} />
       </div>
+
+      {pending.length > 0 && (
+        <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <h2 className="font-display text-lg font-black text-night">
+            ⬢ {pending.length} lavor{pending.length === 1 ? 'o' : 'i'} da confermare
+          </h2>
+          <p className="mb-3 text-sm text-muted">
+            Professionisti che dichiarano di aver lavorato con la tua azienda. Confermando, il lavoro
+            diventa verificato e pesa sul loro score.
+          </p>
+          <div className="space-y-2">
+            {pending.map((it) => (
+              <div key={it.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-3">
+                <div>
+                  <div className="text-sm font-bold text-night">{it.title}</div>
+                  <div className="text-xs text-muted">{it.city} · {it.year}</div>
+                </div>
+                <Button
+                  className="!px-4 !py-2 !text-xs"
+                  onClick={async () => {
+                    if (!token) return;
+                    await api.portfolio.confirm(it.id, token).catch(console.error);
+                    setPending((xs) => xs.filter((x) => x.id !== it.id));
+                  }}
+                >
+                  ✓ Conferma lavoro
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <h2 className="mb-3 font-display text-xl font-black text-night">Le tue offerte</h2>
       {jobs.length === 0 ? (
@@ -116,4 +150,5 @@ const companyNav = [
   { href: '/dashboard/company', label: 'Le mie offerte' },
   { href: '/dashboard/company/search', label: 'Cerca professionisti' },
   { href: '/dashboard/company/jobs/new', label: 'Nuova offerta' },
+  { href: '/dashboard/messages', label: 'Messaggi' },
 ];

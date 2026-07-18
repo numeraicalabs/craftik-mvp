@@ -9,11 +9,14 @@ import { APP_STATUS_LABEL, JOB_TYPE_LABEL, PROFESSION_LABELS } from '@/lib/types
 import { useRequireAuth } from '@/lib/useRequireAuth';
 import { DashboardShell } from '@/components/DashboardShell';
 import { Card } from '@/components/ui';
+import { ReviewForm } from '@/components/Trust';
 
 export default function WorkerApplicationsPage() {
   const { token, ready } = useRequireAuth('worker');
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewing, setReviewing] = useState<number | null>(null);
+  const [reviewed, setReviewed] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!ready || !token) return;
@@ -25,10 +28,7 @@ export default function WorkerApplicationsPage() {
   }, [ready, token]);
 
   return (
-    <DashboardShell role="worker" nav={[
-      { href: '/dashboard/worker', label: 'Dashboard' },
-      { href: '/dashboard/worker/applications', label: 'Le mie candidature' },
-    ]}>
+    <DashboardShell role="worker" nav={workerNav}>
       <h1 className="mb-6 font-display text-2xl font-black text-night">Le mie candidature</h1>
       {loading ? (
         <div className="text-muted">Caricamento…</div>
@@ -77,6 +77,30 @@ export default function WorkerApplicationsPage() {
                   &ldquo;{a.cover_message}&rdquo;
                 </div>
               )}
+              {a.status === 'completed' && !reviewed.has(a.id) && (
+                <div className="mt-3">
+                  {reviewing === a.id && token ? (
+                    <ReviewForm
+                      applicationId={a.id}
+                      token={token}
+                      onDone={() => {
+                        setReviewed((s) => new Set(s).add(a.id));
+                        setReviewing(null);
+                      }}
+                    />
+                  ) : (
+                    <button
+                      onClick={() => setReviewing(a.id)}
+                      className="text-sm font-bold text-orange-dark hover:underline"
+                    >
+                      ★ Recensisci l&apos;azienda
+                    </button>
+                  )}
+                </div>
+              )}
+              {reviewed.has(a.id) && (
+                <div className="mt-3 text-sm font-semibold text-verified">✓ Recensione inviata</div>
+              )}
             </div>
           ))}
         </div>
@@ -84,3 +108,11 @@ export default function WorkerApplicationsPage() {
     </DashboardShell>
   );
 }
+
+const workerNav = [
+  { href: '/dashboard/worker', label: 'Dashboard' },
+  { href: '/dashboard/worker/portfolio', label: 'Portfolio' },
+  { href: '/dashboard/worker/applications', label: 'Candidature' },
+  { href: '/dashboard/messages', label: 'Messaggi' },
+  { href: '/dashboard/worker/profile', label: 'Profilo' },
+];
