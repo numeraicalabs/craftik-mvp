@@ -4,12 +4,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { api } from '@/lib/api';
-import type { Badge, Certification, PortfolioItem, ReviewWithAuthor, WorkerProfile } from '@/lib/types';
+import type { Badge, Certification, PortfolioItemFull, ReviewWithAuthor, WorkerProfile } from '@/lib/types';
 import { PROFESSION_LABELS } from '@/lib/types';
 import { useRequireAuth } from '@/lib/useRequireAuth';
+import { useAuth } from '@/lib/auth';
 import { DashboardShell } from '@/components/DashboardShell';
 import { ScoreRing, VerifiedSeal } from '@/components/Brand';
-import { BadgeRow, CertList, PortfolioCard, ReviewList } from '@/components/Trust';
+import { BadgeRow, CertList, ReviewList } from '@/components/Trust';
+import { PortfolioSocialCard } from '@/components/PortfolioSocial';
 import { Button, Card } from '@/components/ui';
 import { avatarGradient, initials } from '@/lib/utils';
 
@@ -22,10 +24,11 @@ const NAV = [
 export default function WorkerPublicProfile({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { token, ready } = useRequireAuth('company');
+  const currentUserId = useAuth((st) => st.userId);
   const [worker, setWorker] = useState<WorkerProfile | null>(null);
   const [badges, setBadges] = useState<Badge[]>([]);
   const [certs, setCerts] = useState<Certification[]>([]);
-  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const [portfolio, setPortfolio] = useState<PortfolioItemFull[]>([]);
   const [reviews, setReviews] = useState<ReviewWithAuthor[]>([]);
   const [contacting, setContacting] = useState(false);
 
@@ -36,7 +39,7 @@ export default function WorkerPublicProfile({ params }: { params: { id: string }
     api.workers.getById(workerId, token).then(setWorker).catch(console.error);
     api.badges.forWorker(workerId, token).then(setBadges).catch(console.error);
     api.certifications.listForWorker(workerId, token).then(setCerts).catch(console.error);
-    api.portfolio.listForWorker(workerId, token).then(setPortfolio).catch(console.error);
+    api.portfolio.listFull(workerId, token).then(setPortfolio).catch(console.error);
     api.reviews.forWorker(workerId, token).then(setReviews).catch(console.error);
   }, [ready, token, workerId]);
 
@@ -135,7 +138,9 @@ export default function WorkerPublicProfile({ params }: { params: { id: string }
               <Card><p className="text-sm text-muted">Nessun lavoro documentato.</p></Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {portfolio.map((it) => <PortfolioCard key={it.id} item={it} />)}
+                {portfolio.map((it) => (
+                  <PortfolioSocialCard key={it.id} item={it} token={token!} currentUserId={currentUserId} />
+                ))}
               </div>
             )}
           </section>

@@ -7,6 +7,7 @@ from app.models.application import Application, ApplicationStatus, Review
 from app.models.certification import Certification, CertificationKind, VerificationStatus
 from app.models.portfolio import PortfolioItem
 from app.models.message import Conversation, Message
+from app.models.social import PortfolioPhoto, PortfolioLike, PortfolioComment
 
 __all__ = [
     "User", "UserRole",
@@ -17,4 +18,5 @@ __all__ = [
     "Certification", "CertificationKind", "VerificationStatus",
     "PortfolioItem",
     "Conversation", "Message",
+    "PortfolioPhoto", "PortfolioLike", "PortfolioComment",
 ]

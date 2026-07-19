@@ -6,6 +6,9 @@ import type {
   ChatMessage,
   Conversation,
   PortfolioItem,
+  PortfolioComment,
+  PortfolioItemFull,
+  PortfolioPhoto,
   ReviewWithAuthor,
   AuthToken,
   Company,
@@ -170,6 +173,28 @@ export const api = {
       request<PortfolioItem[]>('/portfolio/pending-confirmations', {}, token),
     confirm: (id: number, token: string) =>
       request<PortfolioItem>(`/portfolio/${id}/confirm`, { method: 'POST' }, token),
+
+    // ---- social layer ----
+    listFull: (workerId: number, token: string) =>
+      request<PortfolioItemFull[]>(`/portfolio/workers/${workerId}/full`, {}, token),
+    addPhoto: (itemId: number, dataUrl: string, caption: string | null, token: string) =>
+      request<PortfolioPhoto>(
+        `/portfolio/me/${itemId}/photos`,
+        { method: 'POST', body: JSON.stringify({ data_url: dataUrl, caption }) },
+        token,
+      ),
+    deletePhoto: (photoId: number, token: string) =>
+      request<void>(`/portfolio/me/photos/${photoId}`, { method: 'DELETE' }, token),
+    toggleLike: (itemId: number, token: string) =>
+      request<{ liked: boolean; like_count: number }>(`/portfolio/${itemId}/like`, { method: 'POST' }, token),
+    listComments: (itemId: number, token: string) =>
+      request<PortfolioComment[]>(`/portfolio/${itemId}/comments`, {}, token),
+    addComment: (itemId: number, body: string, token: string) =>
+      request<PortfolioComment>(
+        `/portfolio/${itemId}/comments`,
+        { method: 'POST', body: JSON.stringify({ body }) },
+        token,
+      ),
   },
 
   // ---- Messages ----

@@ -213,3 +213,40 @@ export interface ReviewWithAuthor {
   comment: string | null;
   created_at: string;
 }
+
+// ---- Portfolio social layer ----
+export interface PortfolioPhoto {
+  id: number;
+  data_url: string;
+  caption: string | null;
+  position: number;
+}
+
+export interface PortfolioComment {
+  id: number;
+  user_id: number;
+  author_name: string;
+  author_role: string;
+  body: string;
+  created_at: string;
+}
+
+export interface PortfolioItemFull {
+  id: number;
+  worker_id: number;
+  title: string;
+  description: string | null;
+  role: string | null;
+  client_name: string | null;
+  city: string | null;
+  year: number | null;
+  duration_weeks: number | null;
+  materials: string | null;
+  company_id: number | null;
+  confirmed: boolean;
+  confirmed_at: string | null;
+  photos: PortfolioPhoto[];
+  like_count: number;
+  liked_by_me: boolean;
+  comment_count: number;
+}

@@ -220,3 +220,15 @@ La v0.2 aggiunge 3 tabelle (migrazione `0002`) e un seed con 35 professionisti +
 3. Se invece hai già dati veri da preservare: salta il punto 2 — le nuove funzionalità sono disponibili da subito, semplicemente senza dati demo aggiuntivi.
 
 Login demo invariati: `marco@craftik.dev` / `demo1234`, `hr@edilcostruzioni.dev` / `demo1234` (tutti gli account seed usano `demo1234`).
+
+
+---
+
+## Aggiornare alla v0.3 (foto lavori, like, commenti, sidebar)
+
+La v0.3 aggiunge 3 tabelle (migrazione `0003`): `portfolio_photos`, `portfolio_likes`, `portfolio_comments`.
+
+1. **Push su GitHub** → Render builda e applica `alembic upgrade head` in automatico. Le nuove tabelle vengono create senza toccare i dati esistenti.
+2. Se vuoi ricaricare il seed con le foto demo (97 foto, 102 like, 28 commenti): su Neon esegui `DROP SCHEMA public CASCADE; CREATE SCHEMA public;` e poi su Render "Clear build cache & deploy".
+
+**Nota sulle foto**: sul free tier di Render il filesystem è effimero, quindi le foto sono salvate come data URL (JPEG ridimensionato lato client a ~1200px) direttamente in Postgres. Per volumi di produzione, migrare a S3/R2 + CDN: basta cambiare `PortfolioPhoto.data_url` con un campo `url` che punta all'oggetto caricato.

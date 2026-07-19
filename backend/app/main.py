@@ -19,6 +19,7 @@ from app.api import jobs as jobs_api
 from app.api import reviews as reviews_api
 from app.api import certifications as certifications_api
 from app.api import portfolio as portfolio_api
+from app.api import portfolio_social as portfolio_social_api
 from app.api import messages as messages_api
 from app.api import workers as workers_api
 from app.core.config import settings
@@ -107,6 +108,7 @@ app.include_router(applications_api.router, prefix=API)
 app.include_router(reviews_api.router, prefix=API)
 app.include_router(certifications_api.router, prefix=API)
 app.include_router(portfolio_api.router, prefix=API)
+app.include_router(portfolio_social_api.router, prefix=API)
 app.include_router(messages_api.router, prefix=API)
 
 

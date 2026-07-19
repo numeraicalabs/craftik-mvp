@@ -172,6 +172,21 @@ def _pwd() -> str:
     return _PWD
 
 
+
+import base64 as _base64
+
+
+def _b64_svg(color: str, label: str) -> str:
+    """A tiny SVG 'photo' placeholder encoded as base64 (valid data URL image)."""
+    svg = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">'
+        f'<rect width="400" height="300" fill="{color}"/>'
+        f'<text x="200" y="160" font-family="Arial" font-size="34" fill="#ffffff" '
+        f'text-anchor="middle" font-weight="bold">{label}</text></svg>'
+    )
+    return _base64.b64encode(svg.encode()).decode()
+
+
 def seed(db: Session) -> None:
     if db.query(User).first() is not None:
         return  # already seeded
@@ -316,6 +331,49 @@ def seed(db: Session) -> None:
         db.add(Message(conversation_id=conv.id, sender_user_id=w.user_id,
                        body="Buongiorno, sì, sono disponibile martedì o mercoledì mattina. Mi può inviare l'indirizzo del cantiere?"))
 
+    db.commit()
+
+    # ---- social layer: proof photos, likes, comments on portfolio items ----
+    from app.models.social import PortfolioComment, PortfolioLike, PortfolioPhoto
+
+    # Tiny 4x3 solid-color JPEG data URLs (valid images, ~0.3KB each) as placeholders.
+    # In production these are real photos uploaded from the phone.
+    SWATCHES = [
+        "data:image/svg+xml;base64," + _b64_svg("#0F2A43", "Cantiere"),
+        "data:image/svg+xml;base64," + _b64_svg("#FF6B1A", "Prima"),
+        "data:image/svg+xml;base64," + _b64_svg("#1DB954", "Dopo"),
+        "data:image/svg+xml;base64," + _b64_svg("#16395C", "Dettaglio"),
+    ]
+    all_items = db.query(PortfolioItem).all()
+    all_company_users = [c.user_id for c in companies]
+    comment_pool = [
+        "Ottimo lavoro, pulito e a regola d'arte.",
+        "Complimenti, si vede la cura del dettaglio.",
+        "Bel cantiere! Ci piacerebbe lavorare con te.",
+        "Finiture impeccabili.",
+        "Che bel risultato, bravo davvero.",
+    ]
+    for idx, it in enumerate(all_items):
+        # 1-3 proof photos on ~70% of items
+        if idx % 10 < 7:
+            n_photos = 1 + (idx % 3)
+            for k in range(n_photos):
+                db.add(PortfolioPhoto(
+                    portfolio_item_id=it.id,
+                    data_url=SWATCHES[(idx + k) % len(SWATCHES)],
+                    caption=["Vista generale", "Fase di lavorazione", "Risultato finale", "Particolare"][k % 4],
+                    position=k,
+                ))
+        # likes from a few companies
+        for j in range((idx % 4)):
+            db.add(PortfolioLike(portfolio_item_id=it.id, user_id=all_company_users[(idx + j) % len(all_company_users)]))
+        # a comment on ~40% of items
+        if idx % 5 < 2:
+            db.add(PortfolioComment(
+                portfolio_item_id=it.id,
+                user_id=all_company_users[idx % len(all_company_users)],
+                body=comment_pool[idx % len(comment_pool)],
+            ))
     db.commit()
 
     # ---- final: compute all scores ----
